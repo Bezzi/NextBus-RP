@@ -1,23 +1,33 @@
 
-# Default connecting to localhost interface on port 27017 - MongoClient("mongodb://mongodb0.example.net:27017")
+# Python reverse proxy for NextBus API
 
-Run.py represents a python3 implementation of a minimal reverse proxy for the NextBus API.
-By creating a python web server (listening in port 80), the program receives GET requests from a user
-and forwards it to the NextBus API - if the request is not already cached in a local Redis server -.
-The application also has an endpoint path (/stats) to show statistics (slow_requests and queries) which are stored in a
-Mongo database.
+This is a python3 implementation of a reverse proxy for the NextBus API using docker-compose.
 
-Libraries:
+By creating a web server the program receives GET requests from a user and forwards it - if the request is not already cached - to the NextBus API .
 
+
+## Endpoints
+/stats : Displays statistics of the requests stored in a Mongo database.
+
+/publicXMLFeed?command= : Forwards command specified in NextBus API.
+
+## Instructions
+#### Run the following commands:
+ 1.  cd /project_path
+ 2. docker-compose build
+ 3. docker-compose up
+ 4. Make the request to "http:localhost" with the corresponding endpoint.
+
+
+### Libraries:
 - http.server: To create a web server.
 - requests: For external http GET requests to NextBus API.
 - requests_cache: To store requests in cache.
 - Pymongo: Driver to use Mongo database.
 - json: To return data in json format.
 
-Dependecies:
-
-- pip3 install redis
-- pip3 install requests
-- pip3 install requests_cache
-- pip3 install pymongo
+### Python3 Dependecies:
+- redis
+- requests
+- requests_cache
+- pymongo

@@ -3,11 +3,6 @@ import requests
 import requests_cache
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pymongo import MongoClient
-import pymongo
-
-# TODO: VER ESTOO
-
-
 import json
 
 # Specifies the time - in seconds - in which cached data will expire.
@@ -16,15 +11,19 @@ CACHE_TIMEOUT = 300
 # Specifies the threshold time - in seconds - for queries.
 THRESHOLD = 0.2
 
+# Block unwanted browser requests
+BLACK_LIST = ['/service/favicon.ico','/favicon.ico']
+
 # Configuration for request caching
 requests_cache.install_cache('redis_cache', backend='redis', expire_after=CACHE_TIMEOUT)
 requests_cache.clear()
 
 # Database connection and collections
-client = MongoClient()
+client = MongoClient('mongodb', 27017)
 db = client['statistics']
 queries = db['queries']
 slow_requests = db['slow_requests']
+
 
 # HTTPRequestHandler class
 class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
@@ -47,6 +46,8 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
     # GET Method
     def do_GET(self):
+        if self.path in BLACK_LIST:
+            return
 
         if self.path == "/stats":
             # Send response status code
@@ -56,6 +57,7 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             # Send response data
             self.wfile.write(bytes(json.dumps(self.find_stats()), "utf8"))
+
         else:
             # Forward the request to the API
             URL = "http://webservices.nextbus.com/service{0}".format(self.path)
@@ -67,23 +69,27 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
             queries.update_one({"path": self.path},{"$inc": {"count":1}},upsert=True)
 
             if r_seconds > THRESHOLD :
-                # TODO: VER SI ES MAS GRANDE QUE EL QUE ESTA ANTES DE PISARLO!!!
-                slow_requests.update_one({"path": self.path},{"$set": {"seconds":r_seconds}},upsert=True)
+                data = db.slow_requests.find_one({"path": self.path})
+                if data and "seconds" in data:
+                    if r_seconds > data['seconds']:
+                        slow_requests.update_one({"path": self.path},{"$set": {"seconds":r_seconds}})
+                else:
+                    slow_requests.update_one({"path": self.path},{"$set": {"seconds":r_seconds}},upsert=True)
 
+            """
             if r.from_cache:
                 print('Cached answer: '+ str(r_seconds))
             else:
                 print('Non cached answer: '+ str(r_seconds))
-
+            """
             # Send response data
             self.wfile.write(bytes(r.text, "utf8"))
 
-        return
 
 def run():
 
   # Server settings
-  server_address = ('10.10.10.10', 80)
+  server_address = ('0.0.0.0', 80)
   httpd = HTTPServer(server_address, HTTPServer_RequestHandler)
   print('Running server')
   httpd.serve_forever()
