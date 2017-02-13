@@ -1,0 +1,10 @@
+mongodb:
+    image: mongo:3.2
+    ports:
+        - "37017:27017"
+nextbus:
+    build: .
+    ports:
+        - "80:80"
+    links:
+        - mongodb
