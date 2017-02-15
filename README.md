@@ -9,7 +9,7 @@ By creating a web server the program receives GET requests from a user and forwa
 ## Endpoints
 /stats : Displays statistics of the requests stored in a Mongo database.
 
-/publicXMLFeed?command= : Forwards command specified in NextBus API.
+/?command= : Forwards GET request specified in NextBus API.
 
 ## Instructions
 Install "docker-compose" in the system and run the following command:
@@ -28,6 +28,7 @@ Alternatively the python script "revproxy.py" could be executed locally by insta
 - requests_cache: To store requests in cache.
 - pymongo: Driver to use Mongo database.
 - json: To return data in json format.
+- urllib: To parse query parameters.
 
 ### Python3 Dependecies:
 - redis

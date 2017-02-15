@@ -3,6 +3,7 @@ import requests
 import requests_cache
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pymongo import MongoClient
+from urllib import parse
 import json
 
 # Specifies the time - in seconds - in which cached data will expire.
@@ -36,10 +37,8 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
         sr = slow_requests.find()
 
         for item in sr:
-            del item["_id"]
             data['slow_requests'][item['path']] = str(item['seconds'])+"s"
         for item in q:
-            del item["_id"]
             data['queries'][item['path']] = item['count']
 
         return data
@@ -60,13 +59,15 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
         else:
             # Forward the request to the API
-            URL = "http://webservices.nextbus.com/service{0}".format(self.path)
+            URL = "http://webservices.nextbus.com/service/publicXMLFeed"
             headers = {'Accept-Encoding': 'gzip, deflate'}
-            r = requests.get(URL, headers=headers)
+            params = parse.parse_qs(parse.urlparse(self.path).query)
+
+            r = requests.get(URL, headers=headers, params=params)
             r_seconds = r.elapsed.total_seconds()
 
             # Send response status code
-            self.send_response(200)
+            self.send_response(r.status_code)
             # Send headers
             self.send_header('Content-type','text/xml')
             self.end_headers()
