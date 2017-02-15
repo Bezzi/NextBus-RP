@@ -69,7 +69,7 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
             # Send response status code
             self.send_response(r.status_code)
             # Send headers
-            self.send_header('Content-type','text/xml')
+            self.send_header('Content-type', r.headers['content-type'])
             self.end_headers()
 
             # Update stats
