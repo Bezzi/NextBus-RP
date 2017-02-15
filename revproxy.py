@@ -9,10 +9,10 @@ import json
 CACHE_TIMEOUT = 300
 
 # Specifies the threshold time - in seconds - for queries.
-THRESHOLD = 0.2
+THRESHOLD = 0.5
 
 # Block unwanted browser requests
-BLACK_LIST = ['/service/favicon.ico','/favicon.ico']
+BLACKLIST = ['/service/favicon.ico','/favicon.ico']
 
 # Configuration for request caching
 requests_cache.install_cache('redis_cache', backend='redis', expire_after=CACHE_TIMEOUT)
@@ -46,14 +46,14 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
     # GET Method
     def do_GET(self):
-        if self.path in BLACK_LIST:
+        if self.path in BLACKLIST:
             return
 
         if self.path == "/stats":
             # Send response status code
             self.send_response(200)
             # Send headers
-            self.send_header('Content-type','text/html')
+            self.send_header('Content-type','application/json')
             self.end_headers()
             # Send response data
             self.wfile.write(bytes(json.dumps(self.find_stats()), "utf8"))
@@ -65,33 +65,30 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
             r = requests.get(URL, headers=headers)
             r_seconds = r.elapsed.total_seconds()
 
+            # Send response status code
+            self.send_response(200)
+            # Send headers
+            self.send_header('Content-type','text/xml')
+            self.end_headers()
+
             # Update stats
             queries.update_one({"path": self.path},{"$inc": {"count":1}},upsert=True)
 
             if r_seconds > THRESHOLD :
                 data = db.slow_requests.find_one({"path": self.path})
-                if data and "seconds" in data:
+                if data:
                     if r_seconds > data['seconds']:
                         slow_requests.update_one({"path": self.path},{"$set": {"seconds":r_seconds}})
                 else:
                     slow_requests.update_one({"path": self.path},{"$set": {"seconds":r_seconds}},upsert=True)
 
-            """
-            if r.from_cache:
-                print('Cached answer: '+ str(r_seconds))
-            else:
-                print('Non cached answer: '+ str(r_seconds))
-            """
             # Send response data
             self.wfile.write(bytes(r.text, "utf8"))
 
-
 def run():
-
   # Server settings
   server_address = ('0.0.0.0', 80)
   httpd = HTTPServer(server_address, HTTPServer_RequestHandler)
-  print('Running server')
   httpd.serve_forever()
 
 run()

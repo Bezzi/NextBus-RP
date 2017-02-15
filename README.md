@@ -1,7 +1,7 @@
 
 # Python reverse proxy for NextBus API
 
-This is a python3 implementation of a reverse proxy for the NextBus API using docker-compose.
+This is a python3 implementation of a reverse proxy for the NextBus API using docker-compose, allowing multiple instances of the app running at the same time.
 
 By creating a web server the program receives GET requests from a user and forwards it - if the request is not already cached - to the NextBus API .
 
@@ -12,12 +12,15 @@ By creating a web server the program receives GET requests from a user and forwa
 /publicXMLFeed?command= : Forwards command specified in NextBus API.
 
 ## Instructions
-#### Run the following commands:
- 1.  cd /project_path
- 2. docker-compose build
- 3. docker-compose up
- 4. Make the request to "http:localhost" with the corresponding endpoint.
+Install "docker-compose" in the system and run the following command:
 
+ - ./Run.sh or bash Run.sh
+
+To create more than one instance of the app, run the following command with the adequate quantity:
+
+  - docker-compose scale nextbus="quantity" mongodb=1 haproxy=1
+
+Alternatively the python script "revproxy.py" could be executed locally by installing the following dependencies and python3 libraries:
 
 ### Libraries:
 - http.server: To create a web server.

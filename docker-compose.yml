@@ -1,10 +1,14 @@
 mongodb:
-    image: mongo:3.2
-    ports:
-        - "37017:27017"
+    image: mongo:latest
 nextbus:
     build: .
     ports:
-        - "80:80"
+        - "80"
     links:
         - mongodb
+haproxy:
+    image: dockercloud/haproxy
+    ports:
+        - "80:80"
+    links:
+        - nextbus
