@@ -1,7 +1,7 @@
 #!/bin/bash
 # This script is to test concurrent requests to the web server and measure the access time.
 
-BASEURL="http://10.10.10.10/"
+BASEURL="http://localhost/"
 PARAMS="?command=agencyList"
 
 for i in {1..500}

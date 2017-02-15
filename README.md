@@ -1,5 +1,5 @@
 
-# Python reverse proxy for NextBus API
+# Python reverse proxy for the NextBus API
 
 This is a python3 implementation of a reverse proxy for the NextBus API using docker-compose, allowing multiple instances of the app to run at the same time.
 
